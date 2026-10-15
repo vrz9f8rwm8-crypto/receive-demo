@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>送金受け取りデモ</title>
+<style>
+:root{--red:#e60033;--ink:#222;--muted:#707070;--line:#ededed;--bg:#f6f6f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,"Noto Sans JP",sans-serif;color:var(--ink)}
+.app{max-width:430px;min-height:100svh;margin:0 auto;background:#fff;position:relative;box-shadow:0 0 24px #0000000a}
+.demo-banner{background:#fff4d6;color:#6e4b00;text-align:center;padding:8px 12px;font-size:11px;font-weight:700;border-bottom:1px solid #f0dfa9}
+.topbar{height:54px;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid #f3f3f3;font-weight:700;font-size:16px}
+.back{position:absolute;left:16px;border:0;background:transparent;font-size:25px;line-height:1;color:#333;padding:8px;cursor:pointer}
+.brand{font-weight:800;letter-spacing:-.7px;color:var(--red);font-size:23px}
+main{padding:24px 22px 32px}
+.screen{display:none}.screen.active{display:block}
+.center{text-align:center}
+.avatar{width:68px;height:68px;margin:14px auto 12px;border-radius:50%;background:#f3f3f3;display:grid;place-items:center;color:#8a8a8a;font-size:30px}
+.eyebrow{font-size:13px;color:#666;margin:0 0 7px}
+.name{font-size:19px;font-weight:700;margin:0 0 24px}
+.amount-label{font-size:13px;color:#777;margin-bottom:4px}
+.amount{font-size:38px;font-weight:750;letter-spacing:-1px;margin:0 0 22px}
+.amount small{font-size:19px;margin-left:4px}
+.note{font-size:12px;color:#777;line-height:1.7}
+.primary{display:block;width:100%;border:0;border-radius:7px;background:var(--red);color:white;font-size:16px;font-weight:700;padding:16px 14px;margin:24px 0 12px;cursor:pointer;min-height:52px}
+.secondary{display:block;width:100%;border:1px solid #ddd;border-radius:7px;background:white;color:#333;font-size:15px;font-weight:600;padding:14px;margin:10px 0;cursor:pointer}
+.card{border:1px solid var(--line);border-radius:10px;padding:18px 16px;margin:22px 0}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;font-size:14px}
+.row+.row{border-top:1px solid #f0f0f0}
+.row span:first-child{color:#777}
+.success-mark{width:74px;height:74px;border-radius:50%;background:#e9f8ef;color:#1d9b56;display:grid;place-items:center;margin:20px auto 16px;font-size:40px;font-weight:500}
+.success-title{font-size:22px;font-weight:750;margin:0 0 10px}
+.link-icon{width:66px;height:66px;margin:18px auto;background:#fff0f3;border-radius:50%;display:grid;place-items:center;color:var(--red);font-size:30px}
+.urlbox{display:flex;gap:8px;align-items:center;background:#f7f7f7;border:1px solid #e8e8e8;border-radius:8px;padding:10px;margin:18px 0}
+.urltext{font-size:12px;overflow-wrap:anywhere;color:#555;flex:1}
+.copy{border:0;border-radius:6px;background:#333;color:white;padding:10px 12px;font-size:12px;white-space:nowrap;cursor:pointer}
+.footer{padding:14px 20px 24px;text-align:center;color:#999;font-size:11px;line-height:1.7}
+.pill{display:inline-block;background:#f2f2f2;color:#555;border-radius:100px;padding:5px 10px;font-size:11px;margin-bottom:12px}
+hr{border:0;border-top:1px solid #eee;margin:20px 0}
+@media(min-width:600px){body{padding:24px 0}.app{border-radius:18px;overflow:hidden;min-height:850px}.footer{padding-bottom:30px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-banner">デモ画面｜実際のPayPay公式サービスではありません。送金・決済は行われません。</div>
+  <header class="topbar">
+    <button class="back" id="backBtn" aria-label="戻る" hidden>‹</button>
+    <span id="headerTitle">送金の受け取り</span>
+  </header>
+  <main>
+    <section class="screen active" id="receive">
+      <div class="center">
+        <div class="avatar" aria-hidden="true">人</div>
+        <p class="eyebrow">送金を受け取る</p>
+        <h1 class="name" id="senderName">山田 太郎 さん</h1>
+        <div class="amount-label">受け取り金額</div>
+        <p class="amount"><span id="amountValue">1,000</span><small>円</small></p>
+        <p class="note">送金内容を確認してください。<br>このページは操作確認用のデモです。</p>
+      </div>
+      <div class="card">
+        <div class="row"><span>送金者</span><strong id="senderSummary">山田 太郎 さん</strong></div>
+        <div class="row"><span>金額</span><strong><span id="amountSummary">1,000</span>円</strong></div>
+        <div class="row"><span>ステータス</span><strong>デモ・未処理</strong></div>
+      </div>
+      <button class="primary" id="acceptBtn">受け取りを確認する</button>
+      <button class="secondary" id="linkBtn">受け取りリンクを表示</button>
+      <p class="note center">※ ボタンを押しても実際のお金は移動しません。</p>
+    </section>
+
+    <section class="screen" id="complete">
+      <div class="center">
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <span class="pill">デモ表示</span>
+        <h1 class="success-title">確認が完了しました</h1>
+        <p class="note">これは画面遷移を確認するための表示です。<br>実際の送金・受け取りは完了していません。</p>
+        <div class="card">
+          <p class="eyebrow">デモ受け取り金額</p>
+          <p class="amount"><span id="completeAmount">1,000</span><small>円</small></p>
+          <div class="row"><span>送金者</span><strong id="completeSender">山田 太郎 さん</strong></div>
+          <div class="row"><span>状態</span><strong>デモ確認済み</strong></div>
+        </div>
+      </div>
+      <button class="primary" id="homeBtn">受け取り画面に戻る</button>
+      <button class="secondary" id="showLinkBtn">受け取りリンクを見る</button>
+    </section>
+
+    <section class="screen" id="link">
+      <div class="center">
+        <div class="link-icon" aria-hidden="true">↗</div>
+        <h1 class="success-title">受け取りリンク</h1>
+        <p class="note">このリンクはデモページを開くためのものです。<br>実際の送金や残高確認には使用できません。</p>
+      </div>
+      <div class="card">
+        <div class="row"><span>送金者</span><strong id="linkSender">山田 太郎 さん</strong></div>
+        <div class="row"><span>金額</span><strong><span id="linkAmount">1,000</span>円</strong></div>
+      </div>
+      <div class="urlbox">
+        <div class="urltext" id="shareUrl">このページのURL</div>
+        <button class="copy" id="copyBtn">コピー</button>
+      </div>
+      <button class="primary" id="openReceiveBtn">受け取り画面を開く</button>
+      <button class="secondary" id="linkHomeBtn">最初の画面に戻る</button>
+      <p class="note center" id="copyStatus" aria-live="polite"></p>
+    </section>
+  </main>
+  <footer class="footer">非公式のUIデモです。PayPay株式会社とは関係ありません。<br>本ページは実際の送金、決済、本人確認を行いません。</footer>
+</div>
+<script>
+const screens = [...document.querySelectorAll('.screen')];
+const title = document.getElementById('headerTitle');
+const back = document.getElementById('backBtn');
+const titles = {receive:'送金の受け取り', complete:'確認完了（デモ）', link:'受け取りリンク（デモ）'};
+let current = 'receive';
+function go(id){
+  current = id;
+  screens.forEach(s => s.classList.toggle('active', s.id === id));
+  title.textContent = titles[id];
+  back.hidden = id === 'receive';
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id === 'link') updateUrl();
+}
+function updateUrl(){
+  const url = new URL(window.location.href);
+  url.searchParams.set('demo','receive');
+  document.getElementById('shareUrl').textContent = url.toString();
+}
+function formatAmount(raw){
+  const n = Number(String(raw).replace(/[^\d]/g,''));
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 99999999).toLocaleString('ja-JP') : '1,000';
+}
+const params = new URLSearchParams(location.search);
+const sender = (params.get('from') || '山田 太郎').slice(0,40);
+const amount = formatAmount(params.get('amount') || '1000');
+document.getElementById('senderName').textContent = sender + ' さん';
+document.getElementById('senderSummary').textContent = sender + ' さん';
+document.getElementById('completeSender').textContent = sender + ' さん';
+document.getElementById('linkSender').textContent = sender + ' さん';
+['amountValue','amountSummary','completeAmount','linkAmount'].forEach(id => document.getElementById(id).textContent = amount);
+document.getElementById('acceptBtn').addEventListener('click', () => go('complete'));
+document.getElementById('linkBtn').addEventListener('click', () => go('link'));
+document.getElementById('homeBtn').addEventListener('click', () => go('receive'));
+document.getElementById('showLinkBtn').addEventListener('click', () => go('link'));
+document.getElementById('openReceiveBtn').addEventListener('click', () => go('receive'));
+document.getElementById('linkHomeBtn').addEventListener('click', () => go('receive'));
+back.addEventListener('click', () => go('receive'));
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  const text = document.getElementById('shareUrl').textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    document.getElementById('copyStatus').textContent = 'リンクをコピーしました。';
+  } catch(e) {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById('shareUrl'));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    document.getElementById('copyStatus').textContent = 'URLを選択しました。長押ししてコピーしてください。';
+  }
+});
+if(params.get('demo') === 'receive') go('link');
+</script>
+</body>
+</html>
